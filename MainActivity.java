@@ -106,7 +106,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         ExchangeCard recieveExchageCard = receiveExchangeCard(intent);
-        ExchangeCards.isMAC(recieveExchageCard.macAddresses, exchangeCards);
+        exchangeCards.isMAC(recieveExchageCard.macAddresses.get(0));
         exchangeCards.cards.add(recieveExchageCard);
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
