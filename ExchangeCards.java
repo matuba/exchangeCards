@@ -14,21 +14,21 @@ import java.util.ArrayList;
  * Created by shio_ito on 2014/03/30.
  */
 public class ExchangeCards  implements Serializable {
-    public ArrayList<ExchangeCard> exchangeCards;
+    public ArrayList<ExchangeCard> cards = new ArrayList<ExchangeCard>();
 
-    public static boolean isMAC(String macA, ExchangeCards data) {
-        for(ExchangeCard exchangeCard : data.exchangeCards){
+    public boolean isMAC(String macA) {
+        for(ExchangeCard exchangeCard : cards){
             if( exchangeCard.isMAC(macA)){
                 return true;
             }
         }
         return false;
     }
-    public static boolean write(Activity activity, ExchangeCards data) {
+    public static boolean write(Activity activity, ExchangeCards exchangeCards) {
         try {
             FileOutputStream fos = activity.openFileOutput("exchangecards.dat", activity.MODE_PRIVATE);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(data);
+            oos.writeObject(exchangeCards);
             oos.close();
             return true;
         } catch (Exception e) {

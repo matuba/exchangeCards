@@ -1,6 +1,5 @@
 package exchangecards;
 
-import android.bluetooth.BluetoothAdapter;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -29,7 +28,6 @@ import bluetooth.NdefExchangeCardCallback;
 import java.util.TreeMap;
 
 public class MainActivity extends ActionBarActivity {
-    private static String VERSION = "0";
     public static String[] recordNames = new String []{
             "post",
             "managerial",
@@ -45,73 +43,6 @@ public class MainActivity extends ActionBarActivity {
     private ExchangeCards exchangeCards;
     private TreeMap< String,TextView> textViewExchangeCardRecords = null;
     private TreeMap< String,CheckBox> checkBoxExchangeCardRecords = null;
-
-    private void initControls() {
-        textViewExchangeCardRecords = new TreeMap<String, TextView>();
-        textViewExchangeCardRecords.put(recordNames[0], (TextView)findViewById(R.id.textPost));
-        textViewExchangeCardRecords.put(recordNames[1],(TextView)findViewById(R.id.textManagerial));
-        textViewExchangeCardRecords.put(recordNames[2],(TextView)findViewById(R.id.textName));
-        textViewExchangeCardRecords.put(recordNames[3],(TextView)findViewById(R.id.textCompanyName));
-        textViewExchangeCardRecords.put(recordNames[4],(TextView)findViewById(R.id.textAddress1));
-        textViewExchangeCardRecords.put(recordNames[5],(TextView)findViewById(R.id.textAddress2));
-        textViewExchangeCardRecords.put(recordNames[6],(TextView)findViewById(R.id.textTEL));
-        textViewExchangeCardRecords.put(recordNames[7],(TextView)findViewById(R.id.textEmail));
-        textViewExchangeCardRecords.put(recordNames[8],(TextView)findViewById(R.id.textTwitter));
-        checkBoxExchangeCardRecords = new TreeMap<String, CheckBox>();
-        checkBoxExchangeCardRecords.put(recordNames[0],(CheckBox)findViewById(R.id.checkBoxPost));
-        checkBoxExchangeCardRecords.put(recordNames[1],(CheckBox)findViewById(R.id.checkBoxManagerial));
-        checkBoxExchangeCardRecords.put(recordNames[2],(CheckBox)findViewById(R.id.checkBoxName));
-        checkBoxExchangeCardRecords.put(recordNames[3],(CheckBox)findViewById(R.id.checkBoxCompanyName));
-        checkBoxExchangeCardRecords.put(recordNames[4],(CheckBox)findViewById(R.id.checkBoxAddress));
-        checkBoxExchangeCardRecords.put(recordNames[5],(CheckBox)findViewById(R.id.checkBoxTEL));
-        checkBoxExchangeCardRecords.put(recordNames[6],(CheckBox)findViewById(R.id.checkBoxEmail));
-        checkBoxExchangeCardRecords.put(recordNames[7],(CheckBox)findViewById(R.id.checkBoxTwitter));
-
-        for( TreeMap.Entry<String, CheckBox> e : checkBoxExchangeCardRecords.entrySet()){
-            e.getValue().setChecked(true);
-        }
-    }
-    private void loadPreference(SharedPreferences prefs) {
-        for(String recordName : recordNames){
-            textViewExchangeCardRecords.get(recordName).setText(prefs.getString(recordName, ""));
-        }
-        //Bluetooth を探す
-        int crossing = prefs.getInt("crossing", 0);
-        BluetoothService.stop(getApplicationContext());
-        if(crossing > 0) {
-            BluetoothService.setTriggerAtmills((1000 * 60) * crossing);
-            BluetoothService.start(getApplicationContext());
-        }
-    }
-    private void setSettingValues(Intent data){
-        Bundle bundle = data.getExtras();
-        for(String recordName : recordNames){
-            textViewExchangeCardRecords.get(recordName).setText(bundle.getString(recordName, ""));
-        }
-        int crossing = bundle.getInt("crossing", 0);
-        BluetoothService.stop(getApplicationContext());
-        if(crossing > 0) {
-            BluetoothService.setTriggerAtmills((1000 * 60) * crossing);
-            BluetoothService.start(getApplicationContext());
-        }
-    }
-    private String[] createAndroidBeanData() {
-        String[] prefsString = new String[recordNames.length + 1];
-        int dataIndex= 0;
-        prefsString[dataIndex] = VERSION;
-        dataIndex++;
-        for( TreeMap.Entry<String, CheckBox> e : checkBoxExchangeCardRecords.entrySet()){
-            if(e.getValue().isChecked()){
-                prefsString[dataIndex] = textViewExchangeCardRecords[i].getText().toString();
-            }
-            else{
-                prefsString[dataIndex] = "";
-            }
-            dataIndex++;
-        }
-        return prefsString;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,7 +54,7 @@ public class MainActivity extends ActionBarActivity {
 
         NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(getApplicationContext());
         nfcAdapter.setNdefPushMessageCallback(
-                new NdefExchangeCardCallback(createAndroidBeanData()),
+                new NdefExchangeCardCallback(createAndroidBeamData()),
                 this);
         exchangeCards = ExchangeCards.read(this);
     }
@@ -174,22 +105,12 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
-        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-        NdefMessage msg = (NdefMessage) rawMsgs[0];
-        NdefRecord[] ndefRecords = msg.getRecords();
-        String[] ndefStrings = new String[ndefRecords.length];
-        for (int i = 0; i < ndefRecords.length; i++) {
-            ndefStrings[i] = new String(ndefRecords[i].getPayload());
-            Log.d("Android beam", ndefStrings[i]);
-        }
-
-        ExchangeCard card = new ExchangeCard();
-        if (ndefStrings[0].equals(VERSION)) {
-            card.
-        }
+        ExchangeCard recieveExchageCard = receiveExchangeCard(intent);
+        ExchangeCards.isMAC(recieveExchageCard.macAddresses, exchangeCards);
+        exchangeCards.cards.add(recieveExchageCard);
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        alertDialog.setTitle("名刺を頂きました");
+        alertDialog.setTitle(recieveExchageCard.name + "さんから名刺を頂きました");
         alertDialog.setMessage("端末を一度離して名刺を送り返しましょう");
         alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -199,6 +120,87 @@ public class MainActivity extends ActionBarActivity {
         alertDialog.show();
     }
 
+    private void initControls() {
+        textViewExchangeCardRecords = new TreeMap<String, TextView>();
+        textViewExchangeCardRecords.put(recordNames[0], (TextView)findViewById(R.id.textPost));
+        textViewExchangeCardRecords.put(recordNames[1],(TextView)findViewById(R.id.textManagerial));
+        textViewExchangeCardRecords.put(recordNames[2],(TextView)findViewById(R.id.textName));
+        textViewExchangeCardRecords.put(recordNames[3],(TextView)findViewById(R.id.textCompanyName));
+        textViewExchangeCardRecords.put(recordNames[4],(TextView)findViewById(R.id.textAddress1));
+        textViewExchangeCardRecords.put(recordNames[5],(TextView)findViewById(R.id.textAddress2));
+        textViewExchangeCardRecords.put(recordNames[6],(TextView)findViewById(R.id.textTEL));
+        textViewExchangeCardRecords.put(recordNames[7],(TextView)findViewById(R.id.textEmail));
+        textViewExchangeCardRecords.put(recordNames[8],(TextView)findViewById(R.id.textTwitter));
+        checkBoxExchangeCardRecords = new TreeMap<String, CheckBox>();
+        checkBoxExchangeCardRecords.put(recordNames[0],(CheckBox)findViewById(R.id.checkBoxPost));
+        checkBoxExchangeCardRecords.put(recordNames[1],(CheckBox)findViewById(R.id.checkBoxManagerial));
+        checkBoxExchangeCardRecords.put(recordNames[2],(CheckBox)findViewById(R.id.checkBoxName));
+        checkBoxExchangeCardRecords.put(recordNames[3],(CheckBox)findViewById(R.id.checkBoxCompanyName));
+        checkBoxExchangeCardRecords.put(recordNames[4],(CheckBox)findViewById(R.id.checkBoxAddress));
+        checkBoxExchangeCardRecords.put(recordNames[5],(CheckBox)findViewById(R.id.checkBoxTEL));
+        checkBoxExchangeCardRecords.put(recordNames[6],(CheckBox)findViewById(R.id.checkBoxEmail));
+        checkBoxExchangeCardRecords.put(recordNames[7],(CheckBox)findViewById(R.id.checkBoxTwitter));
+        for( TreeMap.Entry<String, CheckBox> e : checkBoxExchangeCardRecords.entrySet()){
+            e.getValue().setChecked(true);
+        }
+    }
+    private void loadPreference(SharedPreferences prefs) {
+        for(String recordName : recordNames){
+            textViewExchangeCardRecords.get(recordName).setText(prefs.getString(recordName, ""));
+        }
+        //Bluetooth を探す
+        int crossing = prefs.getInt("crossing", 0);
+        BluetoothService.stop(getApplicationContext());
+        if(crossing > 0) {
+            BluetoothService.setTriggerAtmills((1000 * 60) * crossing);
+            BluetoothService.start(getApplicationContext());
+        }
+    }
+    private void setSettingValues(Intent data){
+        Bundle bundle = data.getExtras();
+        for(String recordName : recordNames){
+            textViewExchangeCardRecords.get(recordName).setText(bundle.getString(recordName, ""));
+        }
+        int crossing = bundle.getInt("crossing", 0);
+        BluetoothService.stop(getApplicationContext());
+        if(crossing > 0) {
+            BluetoothService.setTriggerAtmills((1000 * 60) * crossing);
+            BluetoothService.start(getApplicationContext());
+        }
+    }
+    private String getTextView(String key, TreeMap< String,TextView> textView, TreeMap< String,CheckBox> checkBox){
+        if(checkBox.get(key).isChecked()){
+            return textView.get(key).getText().toString();
+        }
+        return "";
+    }
+    private ExchangeCard receiveExchangeCard(Intent intent){
+        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+        NdefMessage msg = (NdefMessage) rawMsgs[0];
+        NdefRecord[] ndefRecords = msg.getRecords();
+        String[] ndefStrings = new String[ndefRecords.length];
+        for (int i = 0; i < ndefRecords.length; i++) {
+            ndefStrings[i] = new String(ndefRecords[i].getPayload());
+            Log.d("Android beam", ndefStrings[i]);
+        }
+        return new ExchangeCard(ndefStrings);
+    }
+    private String[] createAndroidBeamData() {
+        ExchangeCard androidBeamData = new ExchangeCard();
+        androidBeamData.post = getTextView( "post", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.managerial = getTextView("managerial", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.name = getTextView("", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.companyname = getTextView("name", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.address1 = getTextView("address1", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.address2 = getTextView("address2", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.tel = getTextView("tel", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.email = getTextView("email", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.twitter = getTextView("twitter", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.macAddresses.add(BluetoothUtil.getTerminalMacAddress());
+        return androidBeamData.packingAndroidBeamData();
+    }
+
+/*
     private boolean exchangeCard(){
         Intent intent = getIntent();
         Parcelable[] rawMsgs = intent.getParcelableArrayExtra( NfcAdapter.EXTRA_NDEF_MESSAGES);
@@ -212,6 +214,7 @@ public class MainActivity extends ActionBarActivity {
         }
         return true;
     }
+*/
 
 
 
