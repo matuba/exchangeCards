@@ -1,14 +1,15 @@
 package exchangecards;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
 /**
  * Created by shio_ito on 2014/05/05.
  */
-public class ExchangeCard
+public class ExchangeCard implements Serializable
 {
-    public static String VERSION = "0";
+    private static final long serialVersionUID = 0;
 
     public String post = new String("");
     public String managerial = new String("");
@@ -26,7 +27,7 @@ public class ExchangeCard
 
     public ExchangeCard(){}
     public ExchangeCard(String[] androidBeamData){
-        if(androidBeamData[0] == VERSION) {
+        if(androidBeamData[0].equals(Long.toString(serialVersionUID))) {
             post = androidBeamData[1];
             managerial = androidBeamData[2];
             name = androidBeamData[3];
@@ -54,7 +55,7 @@ public class ExchangeCard
 
     public String[] packingAndroidBeamData(){
         String[] androidBeamData = new String[13];
-        androidBeamData[0] =VERSION;
+        androidBeamData[0] = Long.toString(serialVersionUID);
         androidBeamData[1] = post;
         androidBeamData[2] = managerial;
         androidBeamData[3] = name;

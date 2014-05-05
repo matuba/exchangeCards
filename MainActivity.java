@@ -17,6 +17,7 @@ import android.util.Log;
 import android.os.Parcelable;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 
 import exchangecards.app.R;
 
@@ -40,7 +41,7 @@ public class MainActivity extends ActionBarActivity {
             "twitter"};
 
     private static int SETTING_ACTIVITY = 9999;
-    private ExchangeCards exchangeCards;
+    private ExchangeCards exchangeCards = new ExchangeCards();
     private TreeMap< String,TextView> textViewExchangeCardRecords = null;
     private TreeMap< String,CheckBox> checkBoxExchangeCardRecords = null;
     @Override
@@ -57,6 +58,8 @@ public class MainActivity extends ActionBarActivity {
                 new NdefExchangeCardCallback(createAndroidBeamData()),
                 this);
         exchangeCards = ExchangeCards.read(this);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     }
     @Override
     protected void onStop() {
@@ -106,8 +109,9 @@ public class MainActivity extends ActionBarActivity {
         }
 
         ExchangeCard recieveExchageCard = receiveExchangeCard(intent);
-        exchangeCards.isMAC(recieveExchageCard.macAddresses.get(0));
-        exchangeCards.cards.add(recieveExchageCard);
+        exchangeCards.removeCard(recieveExchageCard.macAddresses.get(0));
+        exchangeCards.addCard(recieveExchageCard);
+        ExchangeCards.write(this, exchangeCards);
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         alertDialog.setTitle(recieveExchageCard.name + "さんから名刺を頂きました");
@@ -169,6 +173,9 @@ public class MainActivity extends ActionBarActivity {
         }
     }
     private String getTextView(String key, TreeMap< String,TextView> textView, TreeMap< String,CheckBox> checkBox){
+        if(!checkBox.containsKey(key)){
+            return "";
+        }
         if(checkBox.get(key).isChecked()){
             return textView.get(key).getText().toString();
         }
@@ -189,8 +196,8 @@ public class MainActivity extends ActionBarActivity {
         ExchangeCard androidBeamData = new ExchangeCard();
         androidBeamData.post = getTextView( "post", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
         androidBeamData.managerial = getTextView("managerial", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
-        androidBeamData.name = getTextView("", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
-        androidBeamData.companyname = getTextView("name", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.name = getTextView("name", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
+        androidBeamData.companyname = getTextView("companyname", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
         androidBeamData.address1 = getTextView("address1", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
         androidBeamData.address2 = getTextView("address2", textViewExchangeCardRecords, checkBoxExchangeCardRecords);
         androidBeamData.tel = getTextView("tel", textViewExchangeCardRecords, checkBoxExchangeCardRecords);

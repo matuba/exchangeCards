@@ -13,7 +13,8 @@ import java.util.ArrayList;
 /**
  * Created by shio_ito on 2014/03/30.
  */
-public class ExchangeCards  implements Serializable {
+public class ExchangeCards implements Serializable {
+    private static final long serialVersionUID = 0;
     public ArrayList<ExchangeCard> cards = new ArrayList<ExchangeCard>();
 
     public boolean isMAC(String macA) {
@@ -24,6 +25,24 @@ public class ExchangeCards  implements Serializable {
         }
         return false;
     }
+    public void addCard(ExchangeCard card){
+        cards.add(card);
+    }
+    public boolean removeCard(String macA){
+        int index = 0;
+        for(ExchangeCard exchangeCard : cards){
+            if( exchangeCard.isMAC(macA)){
+                break;
+            }
+            index++;
+        }
+        if(cards.size() != index) {
+            cards.remove(index);
+            return true;
+        }
+        return false;
+    }
+
     public static boolean write(Activity activity, ExchangeCards exchangeCards) {
         try {
             FileOutputStream fos = activity.openFileOutput("exchangecards.dat", activity.MODE_PRIVATE);
@@ -46,6 +65,6 @@ public class ExchangeCards  implements Serializable {
         } catch (Exception e) {
             Log.d("read", e.getMessage());
         }
-        return null;
+        return new ExchangeCards();
     }
 }
