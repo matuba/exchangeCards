@@ -1,5 +1,7 @@
 package exchangecards;
 
+import android.text.format.Time;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -67,7 +69,10 @@ public class ExchangeCard implements Serializable
         androidBeamData[9] = macAddresses.get(0);
         androidBeamData[10] = twitter;
         androidBeamData[11] = facebook;
-        androidBeamData[12] = time;
+
+        Time time = new Time("Asia/Tokyo");
+        time.setToNow();
+        androidBeamData[12] = String.format("%04d%02d%02d%02d%02d%02d", time.year, (time.month + 1), time.monthDay, time.hour, time.minute, time.second);
         return androidBeamData;
     }
 

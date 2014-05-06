@@ -85,12 +85,14 @@ public class MainActivity extends ActionBarActivity {
             startActivityForResult(intent, 1000);
             return true;
         }
+/*
         if (id == R.id.action_bluetooth) {
             BluetoothDeviceFinder finder = new BluetoothDeviceFinder();
             finder.startDiscovery(this);
             return true;
         }
 
+*/
         return super.onOptionsItemSelected(item);
     }
     @Override
