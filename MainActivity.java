@@ -85,14 +85,6 @@ public class MainActivity extends ActionBarActivity {
             startActivityForResult(intent, 1000);
             return true;
         }
-/*
-        if (id == R.id.action_bluetooth) {
-            BluetoothDeviceFinder finder = new BluetoothDeviceFinder();
-            finder.startDiscovery(this);
-            return true;
-        }
-
-*/
         return super.onOptionsItemSelected(item);
     }
     @Override
@@ -106,9 +98,8 @@ public class MainActivity extends ActionBarActivity {
     public void onResume() {
         super.onResume();
         Intent intent = getIntent();
-        if (!NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
+        if (!NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction()))
             return;
-        }
 
         ExchangeCard recieveExchageCard = receiveExchangeCard(intent);
         exchangeCards.removeCard(recieveExchageCard.macAddresses.get(0));
@@ -154,26 +145,23 @@ public class MainActivity extends ActionBarActivity {
         for(String recordName : recordNames){
             textViewExchangeCardRecords.get(recordName).setText(prefs.getString(recordName, ""));
         }
-        //Bluetooth を探す
-        int crossing = prefs.getInt("crossing", 0);
-        BluetoothService.stop(getApplicationContext());
-        if(crossing > 0) {
-            BluetoothService.setTriggerAtmills((1000 * 60) * crossing);
-            BluetoothService.start(getApplicationContext());
-        }
+        resetSearchBluetoothService(prefs.getInt("crossing", 0));
     }
     private void setSettingValues(Intent data){
         Bundle bundle = data.getExtras();
         for(String recordName : recordNames){
             textViewExchangeCardRecords.get(recordName).setText(bundle.getString(recordName, ""));
         }
-        int crossing = bundle.getInt("crossing", 0);
-        BluetoothService.stop(getApplicationContext());
-        if(crossing > 0) {
-            BluetoothService.setTriggerAtmills((1000 * 60) * crossing);
-            BluetoothService.start(getApplicationContext());
-        }
+        resetSearchBluetoothService(bundle.getInt("crossing", 0));
     }
+    private void resetSearchBluetoothService(int crossingTime) {
+        if (crossingTime <= 0)
+            return;
+        BluetoothService.stop(getApplicationContext());
+        BluetoothService.setTriggerAtmills((1000 * 60) * crossingTime);
+        BluetoothService.start(getApplicationContext());
+    }
+
     private String getTextView(String key, TreeMap< String,TextView> textView, TreeMap< String,CheckBox> checkBox){
         if(!checkBox.containsKey(key)){
             return "";

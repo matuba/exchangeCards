@@ -9,6 +9,8 @@ import android.view.MenuItem;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
+import android.view.View;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ import exchangecards.app.R;
 /**
  * Created by shio_ito on 2014/03/17.
  */
-public class CrossingListActivity extends Activity {
+public class CrossingListActivity extends Activity implements AdapterView.OnItemClickListener{
     private GridView gridView;
 
     @Override
@@ -27,21 +29,33 @@ public class CrossingListActivity extends Activity {
         setContentView(R.layout.crossing_list);
 
         gridView = (GridView)findViewById(R.id.gridView);
-        gridView.setNumColumns(2);
+        gridView.setNumColumns(1);
 
         ExchangeCards exchangeCards = ExchangeCards.read(this);
         List<String> lstStr = new ArrayList<String>();
-        lstStr.add( "交換日時");
-        lstStr.add( "お名前");
 
         for(ExchangeCard card : exchangeCards.cards){
-            lstStr.add( card.time.substring(0,4) + "/" + card.time.substring(4,6) + "/" + card.time.substring(6,8));
-            lstStr.add( card.name);
+            StringBuilder gridViewText = new StringBuilder();
+            gridViewText.append(card.time.substring(0,4));
+            gridViewText.append("/");
+            gridViewText.append(card.time.substring(4,6));
+            gridViewText.append("/");
+            gridViewText.append(card.time.substring(6, 8));
+
+            gridViewText.append(" ");
+            gridViewText.append(card.name);
+
+            lstStr.add( new String(gridViewText));
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 this, android.R.layout.simple_list_item_1, lstStr);
         gridView.setAdapter(adapter);
-
+        gridView.setOnItemClickListener(this);
+    }
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent intent = new Intent( this, DetailActivity.class );
+        startActivity(intent);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
