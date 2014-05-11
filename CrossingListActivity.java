@@ -22,6 +22,8 @@ import exchangecards.app.R;
  */
 public class CrossingListActivity extends Activity implements AdapterView.OnItemClickListener{
     private GridView gridView;
+    private ExchangeCards exchangeCards;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +33,7 @@ public class CrossingListActivity extends Activity implements AdapterView.OnItem
         gridView = (GridView)findViewById(R.id.gridView);
         gridView.setNumColumns(1);
 
-        ExchangeCards exchangeCards = ExchangeCards.read(this);
+        exchangeCards = ExchangeCards.read(this);
         List<String> lstStr = new ArrayList<String>();
 
         for(ExchangeCard card : exchangeCards.cards){
@@ -55,6 +57,16 @@ public class CrossingListActivity extends Activity implements AdapterView.OnItem
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent( this, DetailActivity.class );
+        intent.putExtra(DetailActivity.recordNames[0], exchangeCards.cards.get(position).post);
+        intent.putExtra(DetailActivity.recordNames[1], exchangeCards.cards.get(position).managerial);
+        intent.putExtra(DetailActivity.recordNames[2], exchangeCards.cards.get(position).name);
+        intent.putExtra(DetailActivity.recordNames[3], exchangeCards.cards.get(position).companyname);
+        intent.putExtra(DetailActivity.recordNames[4], exchangeCards.cards.get(position).address1);
+        intent.putExtra(DetailActivity.recordNames[5], exchangeCards.cards.get(position).address2);
+        intent.putExtra(DetailActivity.recordNames[5], exchangeCards.cards.get(position).tel);
+        intent.putExtra(DetailActivity.recordNames[5], exchangeCards.cards.get(position).email);
+        intent.putExtra(DetailActivity.recordNames[5], exchangeCards.cards.get(position).twitter);
+
         startActivity(intent);
     }
     @Override

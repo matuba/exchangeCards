@@ -44,6 +44,12 @@ public class DetailActivity extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView( R.layout.activity_detail);
         initControls();
+
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        for(String recordName : recordNames){
+            textViewExchangeCardRecords.get(recordName).setText(bundle.getString(recordName, ""));
+        }
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -62,6 +68,16 @@ public class DetailActivity extends Activity implements OnClickListener {
     }
 
     private void initControls(){
+        textViewExchangeCardRecords = new TreeMap<String, TextView>();
+        textViewExchangeCardRecords.put(recordNames[0], (TextView)findViewById(R.id.textPost));
+        textViewExchangeCardRecords.put(recordNames[1],(TextView)findViewById(R.id.textManagerial));
+        textViewExchangeCardRecords.put(recordNames[2],(TextView)findViewById(R.id.textName));
+        textViewExchangeCardRecords.put(recordNames[3],(TextView)findViewById(R.id.textCompanyName));
+        textViewExchangeCardRecords.put(recordNames[4],(TextView)findViewById(R.id.textAddress1));
+        textViewExchangeCardRecords.put(recordNames[5],(TextView)findViewById(R.id.textAddress2));
+        textViewExchangeCardRecords.put(recordNames[6],(TextView)findViewById(R.id.textTEL));
+        textViewExchangeCardRecords.put(recordNames[7],(TextView)findViewById(R.id.textEmail));
+        textViewExchangeCardRecords.put(recordNames[8],(TextView)findViewById(R.id.textTwitter));
     }
     private Intent createResult(){
         Intent data = new Intent();
